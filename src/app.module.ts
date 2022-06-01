@@ -8,17 +8,6 @@ import { Logger } from 'nestjs-pino';
 
 const logger = pino({
   level: 'debug',
-  hooks: {
-    logMethod(args: any[], method: pino.LogFn, level: number): any {
-      for (let i = 1; i < args.length; ++i) {
-        if (args[i] instanceof Decimal) {
-          args[i] = `${args[i]}`;
-        }
-      }
-
-      return method.apply(this, args);
-    },
-  },
 });
 
 // Monkey patch the actual main function of the nest-pino, because they mess up the passed object to the logger
@@ -28,6 +17,10 @@ Logger.prototype.call = function (
   message: any,
   ...optionalParams: any[]
 ) {
+  if (message instanceof Decimal) {
+    message = `${message}`;
+  }
+
   const objArg: Record<string, any> = {};
 
   // optionalParams contains extra params passed to logger
